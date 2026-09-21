@@ -1,0 +1,12 @@
+export { default as TopBar } from "./TopBar";
+export { default as Header } from "./Header";
+export { default as Hero } from "./Hero";
+export { default as TrustBar } from "./TrustBar";
+export { default as CategoryGrid } from "./CategoryGrid";
+export { default as ProductSection } from "./ProductSection";
+export { default as PromoBanner } from "./PromoBanner";
+export { default as BrandsMarquee } from "./BrandsMarquee";
+export { default as AppPromo } from "./AppPromo";
+export { default as Newsletter } from "./Newsletter";
+export { default as Footer } from "./Footer";
+export * from "./data";

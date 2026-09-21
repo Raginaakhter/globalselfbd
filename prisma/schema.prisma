@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String           @id @default(cuid())
+  name          String
+  email         String           @unique
+  passwordHash  String?
+  provider      String           @default("local") // "local" | "google"
+  providerId    String?
+  avatar        String?
+  emailVerified Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  
+  refreshSessions RefreshSession[]
+  orders          Order[]
+}
+
+model RefreshSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model PasswordResetOtp {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  otpHash        String
+  resetTokenHash String?
+  attempts       Int      @default(0)
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Product {
+  id          String  @id // e.g. "bs1", "td1" — matches legacy catalog IDs
+  name        String
+  brand       String
+  category    String
+  size        String
+  price       Int     // price in BDT (integer taka)
+  rrp         Int?    // recommended retail price
+  emoji       String
+  tint        String  // tailwind bg class for the product tile
+  image       String? // product photo URL or /products/... path; emoji tile is used when empty
+  badge       String? // "NEW", "31% OFF", etc.
+  rating      Float   @default(0)
+  reviews     Int     @default(0)
+  stock       Int     @default(0)
+  description String
+  highlights  String  // JSON array stored as string
+  group       String? // "best-sellers" | "top-deals" | "new-arrivals" for featured sections
+  sortOrder   Int     @default(0)
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([category])
+  @@index([group])
+  @@index([active])
+}
+
+model Order {
+  id            String   @id // e.g. "GS-XXXXXX"
+  userId        String?  // null for guest orders
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status        String   @default("pending") // pending | confirmed | shipped | delivered | cancelled
+  customerName  String
+  customerPhone String
+  customerEmail String   @default("")
+  address       String
+  area          String
+  zone          String   // "dhaka" | "outside"
+  note          String   @default("")
+  payment       String   @default("cod")
+  subtotal      Int
+  shipping      Int
+  total         Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  name       String  // snapshot at order time
+  emoji      String
+  size       String
+  price      Int     // snapshot at order time
+  qty        Int
+  lineTotal  Int
+
+  @@index([orderId])
+}
+
+model Category {
+  slug      String  @id
+  name      String
+  bn        String
+  emoji     String
+  tint      String  // tailwind bg class for the category tile
+  sortOrder Int     @default(0)
+  active    Boolean @default(true)
+}
+
+// Editable storefront content stored as JSON, keyed by section:
+// "settings" | "heroSlides" | "sideBanners" | "trustBadges" | "navLinks" | "footerColumns" | "promoBanner"
+model SiteContent {
+  key       String   @id
+  value     String   // JSON
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
