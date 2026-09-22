@@ -67,6 +67,10 @@ export const contactSchema = z.object({
   message: z.string().trim().min(10, "Please enter a message of at least 10 characters.").max(5000),
 });
 
+export const wishlistToggleSchema = z.object({
+  productId: z.string().trim().min(1, "Product ID is required"),
+});
+
 export const trackOrderSchema = z.object({
   orderId: z.string().trim().min(1, "Please enter your Order ID"),
   email: z.string().trim().min(1, "Please enter the email used for the order").email("Enter a valid email address").toLowerCase(),

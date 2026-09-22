@@ -25,6 +25,7 @@ model User {
 
   refreshSessions RefreshSession[]
   orders          Order[]
+  wishlistItems   WishlistItem[]
 }
 
 model RefreshSession {
@@ -77,7 +78,8 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  orderItems OrderItem[]
+  orderItems    OrderItem[]
+  wishlistedBy  WishlistItem[]
 
   @@index([category])
   @@index([group])
@@ -178,4 +180,18 @@ model ContactMessage {
 
   @@index([status])
   @@index([createdAt])
+}
+
+// A logged-in user's saved products. Wishlisting is an account feature — there is no guest
+// wishlist, so every row always belongs to a real user.
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
 }

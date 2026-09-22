@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { REFRESH_TOKEN_COOKIE_NAME } from "@/lib/cookies";
 
-const protectedRoutes = ["/profile", "/settings", "/account", "/admin"];
+const protectedRoutes = ["/profile", "/settings", "/account", "/admin", "/wishlist"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -30,5 +30,6 @@ export const config = {
     "/settings/:path*",
     "/account/:path*",
     "/admin/:path*",
+    "/wishlist/:path*",
   ],
 };

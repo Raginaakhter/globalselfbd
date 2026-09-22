@@ -6,13 +6,15 @@ import { Check, Heart, Plus, Star } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { formatPrice } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import ProductImage from "@/components/shop/ProductImage";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
-  const [liked, setLiked] = useState(false);
+  const { isWishlisted, toggle } = useWishlist();
   const [justAdded, setJustAdded] = useState(false);
   const { id, name, size, price, rrp, emoji, tint, badge, rating, reviews, brand, image } = product;
+  const liked = isWishlisted(id);
 
   const handleAdd = () => {
     addItem(id, 1, { name });
@@ -33,7 +35,10 @@ export default function ProductCard({ product }: { product: Product }) {
       )}
       <button
         type="button"
-        onClick={() => setLiked((v) => !v)}
+        onClick={(e) => {
+          e.preventDefault();
+          toggle(id, name);
+        }}
         aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
         aria-pressed={liked}
         className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 border border-slate-200 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"

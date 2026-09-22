@@ -2,19 +2,22 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ShoppingCart, Zap } from "lucide-react";
+import { Check, Heart, ShoppingCart, Zap } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { formatPrice } from "@/lib/shop";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import QuantityStepper from "./QuantityStepper";
 
 export default function PurchasePanel({ product }: { product: Product }) {
   const router = useRouter();
   const { addItem } = useCart();
+  const { isWishlisted, toggle } = useWishlist();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const max = Math.min(product.stock, 10);
   const outOfStock = product.stock <= 0;
+  const liked = isWishlisted(product.id);
 
   const handleAdd = () => {
     addItem(product.id, qty, { name: product.name });
@@ -55,6 +58,18 @@ export default function PurchasePanel({ product }: { product: Product }) {
           <Zap className="w-5 h-5" /> Buy Now
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={() => toggle(product.id, product.name)}
+        aria-pressed={liked}
+        className={`mt-3 w-full py-3 rounded-full text-sm font-bold flex items-center justify-center gap-2 border-2 transition-all cursor-pointer ${
+          liked ? "border-coral-500 bg-coral-50 text-coral-600" : "border-slate-200 text-slate-600 hover:border-coral-300 hover:text-coral-600"
+        }`}
+      >
+        <Heart className={`w-4 h-4 ${liked ? "fill-coral-500" : ""}`} />
+        {liked ? "Saved to Wishlist" : "Add to Wishlist"}
+      </button>
     </div>
   );
 }

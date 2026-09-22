@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import CartDrawer from "@/components/shop/CartDrawer";
 import GoogleAuthWrapper from "@/components/auth/GoogleAuthWrapper";
 import { Toaster } from "sonner";
@@ -49,10 +50,12 @@ export default async function RootLayout({
         <GoogleAuthWrapper>
           <AuthProvider>
             <SiteProvider value={site}>
+            <WishlistProvider>
             <CartProvider>
               {children}
               <CartDrawer />
             </CartProvider>
+            </WishlistProvider>
             </SiteProvider>
             <Toaster position="top-right" richColors closeButton />
           </AuthProvider>

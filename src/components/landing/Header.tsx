@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { Search, ShoppingCart, User as UserIcon, Menu, X, LayoutGrid, Package } from "lucide-react";
+import { useWishlist } from "@/context/WishlistContext";
+import { Search, ShoppingCart, User as UserIcon, Menu, X, LayoutGrid, Package, Heart } from "lucide-react";
 import Logo from "./Logo";
 import { useSite } from "@/context/SiteContext";
 
@@ -17,6 +18,7 @@ export default function Header() {
   const [query, setQuery] = useState("");
   const router = useRouter();
   const { count, openDrawer } = useCart();
+  const { count: wishlistCount } = useWishlist();
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +103,19 @@ export default function Header() {
               <span>Register</span>
             </Link>
           )}
+
+          <Link
+            href="/wishlist"
+            aria-label={`Wishlist, ${wishlistCount} items`}
+            className="relative p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shadow-sm"
+          >
+            <Heart className="w-5 h-5" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-coral-500 text-white text-[11px] font-black flex items-center justify-center">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
+            )}
+          </Link>
 
           <button
             type="button"

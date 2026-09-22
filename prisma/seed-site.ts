@@ -132,6 +132,7 @@ export const defaultContent: Record<string, unknown> = {
       links: [
         { label: "All Products", href: "/shop" },
         { label: "My Cart", href: "/cart" },
+        { label: "My Wishlist", href: "/wishlist" },
         { label: "My Account", href: "/profile" },
         { label: "Track Order", href: "/track-order" },
         { label: "Contact Us", href: "/contact" },
