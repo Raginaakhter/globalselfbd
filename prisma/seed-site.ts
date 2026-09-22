@@ -31,7 +31,7 @@ export const defaultContent: Record<string, unknown> = {
     topBarText: "সারা বাংলাদেশে ডেলিভারি",
     complaintTitle: "আপনার অভিযোগ জানান",
     complaintNote: "We read every message and respond within 24 hours.",
-    freeShippingThreshold: 2500,
+    freeShippingThreshold: 10000,
     shippingInsideDhaka: 80,
     shippingOutsideDhaka: 130,
   },
@@ -56,6 +56,7 @@ export const defaultContent: Record<string, unknown> = {
       href: "/shop?category=vitamins",
       gradient: "from-brand-600 via-brand-700 to-navy-700",
       emojis: ["💊","🍊","🌿"],
+      productImage: "/products/sr8872454324474.png",
     },
     {
       eyebrow: "Beauty Week",
@@ -66,6 +67,7 @@ export const defaultContent: Record<string, unknown> = {
       href: "/shop?category=beauty",
       gradient: "from-rose-500 via-pink-600 to-navy-700",
       emojis: ["💄","🧴","🌸"],
+      productImage: "/products/sr8335205531898.png",
     },
     {
       eyebrow: "Baby & Mum",

@@ -5,7 +5,7 @@ import {
   ProductSection,
   PromoBanner,
   BrandsMarquee,
-  AppPromo,
+  DeliveryPromise,
   Newsletter,
 } from "@/components/landing";
 import { apiFetch } from "@/lib/api";
@@ -41,7 +41,7 @@ export default async function Home() {
       <PromoBanner />
       <ProductSection id="new-arrivals" title="New Arrivals" bn="নতুন এসেছে" products={newArrivals} href="/shop?sort=new" />
       <BrandsMarquee />
-      <AppPromo />
+      <DeliveryPromise />
       <Newsletter />
     </>
   );

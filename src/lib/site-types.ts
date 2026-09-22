@@ -36,6 +36,7 @@ export type HeroSlide = {
   gradient: string;
   emojis: string[];
   image?: string; // full-bleed banner image (text is part of the picture); gradient/emojis are skipped when set
+  productImage?: string; // small round product photo shown in the decorative area of a gradient slide
 };
 
 export type SideBanner = {

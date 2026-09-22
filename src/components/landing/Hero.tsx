@@ -17,7 +17,8 @@ export default function Hero() {
   useEffect(() => {
     if (paused) return;
     if (count < 2) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % count), 5500);
+    // Snappier than before: the first slide change now lands sooner instead of feeling stalled.
+    const id = setInterval(() => setIndex((i) => (i + 1) % count), 4200);
     return () => clearInterval(id);
   }, [paused, count]);
 
@@ -28,22 +29,26 @@ export default function Hero() {
       <div className="grid lg:grid-cols-[1fr_300px] gap-4">
         {/* Carousel */}
         <div
-          className={`relative overflow-hidden rounded-3xl shadow-xl min-h-[300px] sm:min-h-[380px] ${heroSlides.some((s) => s.image) ? "sm:aspect-[2752/1536]" : ""}`}
+          className={`group relative overflow-hidden rounded-3xl shadow-xl min-h-[300px] sm:min-h-[380px] ${heroSlides.some((s) => s.image) ? "sm:aspect-[2752/1536]" : ""}`}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           aria-roledescription="carousel"
         >
+          <span className="shine-sweep z-20" />
           {heroSlides.map((s, i) => (
             <div
               key={s.title}
               aria-hidden={i !== active}
-              className={`absolute inset-0 bg-gradient-to-br ${s.gradient} text-white transition-all duration-700 ease-out ${
-                i === active ? "opacity-100 translate-x-0" : "opacity-0 pointer-events-none translate-x-6"
+              className={`absolute inset-0 bg-gradient-to-br ${s.gradient} text-white transition-all duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
+                i === active ? "opacity-100 translate-x-0 scale-100" : "opacity-0 pointer-events-none translate-x-3 scale-[1.02]"
               }`}
             >
               {s.image ? (
-                <Link href={s.href} className="absolute inset-0 block" aria-label={s.title}>
-                  <Image src={s.image} alt={s.title} fill priority={i === 0} sizes="(min-width: 1024px) 980px, 100vw" className="object-cover object-center" />
+                <Link href={s.href} className="absolute inset-0 block overflow-hidden" aria-label={s.title}>
+                  <div key={i === active ? `active-${index}` : "idle"} className={`absolute inset-0 ${i === active ? "animate-ken-burns" : ""}`}>
+                    <Image src={s.image} alt={s.title} fill priority={i === 0} sizes="(min-width: 1024px) 980px, 100vw" className="object-cover object-center" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
                 </Link>
               ) : (
               <>
@@ -67,12 +72,33 @@ export default function Hero() {
                   </Link>
                 </div>
 
-                {/* floating emoji cluster */}
+                {/* Decorative area: a real round product photo when the slide has one, otherwise
+                    the emoji cluster it always had. */}
                 <div className="hidden sm:flex absolute right-10 lg:right-16 top-1/2 -translate-y-1/2 items-center justify-center w-56 h-56 lg:w-72 lg:h-72">
                   <div className="absolute inset-0 rounded-full bg-white/10 border border-white/20" />
-                  <span className="absolute text-7xl lg:text-8xl animate-float">{s.emojis[0]}</span>
-                  <span className="absolute -top-2 right-2 text-4xl lg:text-5xl animate-float [animation-delay:-1.5s]">{s.emojis[1]}</span>
-                  <span className="absolute bottom-0 left-2 text-4xl lg:text-5xl animate-float [animation-delay:-3s]">{s.emojis[2]}</span>
+                  {s.productImage ? (
+                    <>
+                      <div className="relative w-40 h-40 lg:w-52 lg:h-52 rounded-full overflow-hidden border-4 border-white/50 shadow-2xl bg-white animate-float">
+                        <Image src={s.productImage} alt={s.title} fill sizes="208px" className="object-cover object-center" />
+                      </div>
+                      {s.emojis[1] && (
+                        <span className="absolute top-0 right-2 text-4xl lg:text-5xl animate-float [animation-delay:-1.5s] drop-shadow-lg">
+                          {s.emojis[1]}
+                        </span>
+                      )}
+                      {s.emojis[2] && (
+                        <span className="absolute bottom-2 left-0 text-3xl lg:text-4xl animate-float [animation-delay:-3s] drop-shadow-lg">
+                          {s.emojis[2]}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="absolute text-7xl lg:text-8xl animate-float">{s.emojis[0]}</span>
+                      <span className="absolute -top-2 right-2 text-4xl lg:text-5xl animate-float [animation-delay:-1.5s]">{s.emojis[1]}</span>
+                      <span className="absolute bottom-0 left-2 text-4xl lg:text-5xl animate-float [animation-delay:-3s]">{s.emojis[2]}</span>
+                    </>
+                  )}
                 </div>
               </div>
               </>
@@ -101,18 +127,35 @@ export default function Hero() {
 
         {/* Side banners */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
-          {sideBanners.map((b) => (
+          {sideBanners.map((b, i) => (
             <Link
               key={b.title}
               href={b.href || "/shop"}
-              className={`relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br ${b.gradient} ${b.text} shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all flex flex-col justify-between min-h-[150px]`}
+              className={`group relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br ${b.gradient} ${b.text} shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[150px]`}
             >
-              <span className="absolute -right-3 -bottom-4 text-8xl opacity-25 select-none">{b.emoji}</span>
+              {/* Dot texture + hover shine — gives the flat gradient card some depth/"stylish" polish */}
+              <div
+                className="absolute inset-0 opacity-[0.08]"
+                style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "16px 16px" }}
+              />
+              <span className="shine-sweep" />
+
+              {/* Layered floating emoji cluster instead of one flat icon */}
+              <span className="absolute -right-3 -bottom-4 text-8xl opacity-20 select-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                {b.emoji}
+              </span>
+              <span
+                className="absolute right-10 top-4 text-2xl opacity-30 select-none animate-float"
+                style={{ animationDuration: "4.5s", animationDelay: `${i * 0.3}s` }}
+              >
+                {b.emoji}
+              </span>
+
               <div className="relative">
                 <h3 className="text-xl font-black leading-tight">{b.title}</h3>
                 <p className="text-sm mt-1 opacity-85 max-w-[200px]">{b.body}</p>
               </div>
-              <span className="relative inline-flex items-center gap-1.5 text-sm font-bold mt-3">
+              <span className="relative inline-flex items-center gap-1.5 text-sm font-bold mt-3 transition-transform duration-300 group-hover:translate-x-1">
                 Learn more <ArrowRight className="w-4 h-4" />
               </span>
             </Link>
