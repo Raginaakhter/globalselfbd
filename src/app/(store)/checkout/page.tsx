@@ -78,11 +78,13 @@ function CheckoutContent() {
   // Fetch pricing from API whenever items or zone change
   useEffect(() => {
     if (itemsForCalc.length === 0) {
-      setServerLines([]);
-      setServerSubtotal(0);
-      setServerShipping(0);
-      setServerTotal(0);
-      setPriceLoaded(true);
+      queueMicrotask(() => {
+        setServerLines([]);
+        setServerSubtotal(0);
+        setServerShipping(0);
+        setServerTotal(0);
+        setPriceLoaded(true);
+      });
       return;
     }
 

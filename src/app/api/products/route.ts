@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Post-process: parse highlights JSON, sort by discount if needed
-    let result = products.map((p) => ({
+    const result = products.map((p) => ({
       ...p,
       highlights: JSON.parse(p.highlights) as string[],
     }));

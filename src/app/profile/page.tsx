@@ -72,7 +72,7 @@ function ProfileContent() {
   }, [authenticatedFetch]);
 
   useEffect(() => {
-    if (tab === "orders" && orders === null && user) loadOrders();
+    if (tab === "orders" && orders === null && user) queueMicrotask(() => loadOrders());
   }, [tab, orders, user, loadOrders]);
 
   const startEditing = () => {

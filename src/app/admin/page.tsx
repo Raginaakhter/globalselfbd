@@ -49,7 +49,7 @@ function AdminOrdersDashboard() {
   );
 
   useEffect(() => {
-    load({ q, status, page });
+    queueMicrotask(() => load({ q, status, page }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, page]);
 

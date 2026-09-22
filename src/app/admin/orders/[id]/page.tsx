@@ -40,7 +40,7 @@ function AdminOrderDetail({ id }: { id: string }) {
   }, [id]);
 
   useEffect(() => {
-    load();
+    queueMicrotask(() => load());
   }, [load]);
 
   const updateStatus = async (e: React.FormEvent) => {

@@ -58,8 +58,10 @@ function TrackOrderForm() {
     const qId = searchParams.get("orderId");
     const qEmail = searchParams.get("email");
     if (qId && qEmail && !autoSubmitted) {
-      setAutoSubmitted(true);
-      submit(qId, qEmail);
+      queueMicrotask(() => {
+        setAutoSubmitted(true);
+        submit(qId, qEmail);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, autoSubmitted]);

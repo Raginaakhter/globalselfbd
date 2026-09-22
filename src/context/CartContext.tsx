@@ -84,7 +84,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Fetch server-verified pricing whenever items change
   useEffect(() => {
     if (!hydrated || items.length === 0) {
-      setServerLines([]);
+      queueMicrotask(() => setServerLines([]));
       return;
     }
 

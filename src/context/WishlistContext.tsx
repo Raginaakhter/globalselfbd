@@ -51,7 +51,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   // Load the wishlist once we know whether the visitor is signed in, and again on login/logout.
   useEffect(() => {
     if (authLoading) return;
-    refresh();
+    // Deferred to a microtask so state updates from refresh() happen outside the effect's
+    // synchronous pass (satisfies react-hooks/set-state-in-effect).
+    queueMicrotask(() => {
+      refresh();
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated]);
 
