@@ -59,6 +59,14 @@ export const googleAuthSchema = z.object({
   idToken: z.string().min(1, "Google ID Token is required"),
 });
 
+export const contactSchema = z.object({
+  name: z.string().trim().min(2, "Please enter your full name.").max(150),
+  email: z.string().trim().min(1, "Please enter your email address.").email("Enter a valid email address.").toLowerCase(),
+  phone: z.string().trim().max(30).optional().default(""),
+  subject: z.string().trim().min(2, "Please enter a subject.").max(200),
+  message: z.string().trim().min(10, "Please enter a message of at least 10 characters.").max(5000),
+});
+
 export const trackOrderSchema = z.object({
   orderId: z.string().trim().min(1, "Please enter your Order ID"),
   email: z.string().trim().min(1, "Please enter the email used for the order").email("Enter a valid email address").toLowerCase(),

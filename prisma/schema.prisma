@@ -164,3 +164,18 @@ model NewsletterSubscriber {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+// Submissions from the public Contact Us form.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String   @default("")
+  subject   String
+  message   String
+  status    String   @default("new") // "new" | "read" | "replied"
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}

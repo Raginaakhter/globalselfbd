@@ -12,7 +12,7 @@ export default function Footer() {
   return (
     <footer id="contact" className="mt-16 bg-navy-800 text-white scroll-mt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(2,1fr)_1.2fr]">
+        <div className="grid gap-10 lg:grid-cols-[1.3fr_repeat(3,1fr)_1.1fr]">
           <div>
             <Logo light />
             {tagline && <p className="text-sm text-white/65 leading-relaxed mt-4 max-w-xs">{tagline}</p>}
@@ -93,7 +93,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
           <p>&copy; {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+            <Link href="/terms" className="hover:text-white">Terms of Service</Link>
+            <Link href="/refund-policy" className="hover:text-white">Refund Policy</Link>
+            <Link href="/shipping-policy" className="hover:text-white">Shipping Policy</Link>
             <Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link>
           </div>
         </div>

@@ -254,3 +254,56 @@ export async function sendOrderStatusUpdateEmail(order: OrderEmailData): Promise
     return false;
   }
 }
+
+export type ContactMessageData = {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+};
+
+/**
+ * Notifies the store's own inbox (settings.email) when someone submits the Contact Us form.
+ * The submission itself is always saved to the database first (see /api/contact); this email
+ * is a best-effort heads-up on top of that, not the source of truth.
+ */
+export async function sendContactNotificationEmail(to: string, data: ContactMessageData): Promise<boolean> {
+  if (!to) return false;
+
+  const html = shell(`
+    <h2 class="title">New message from the Contact Us form</h2>
+    <div class="info-grid">
+      <div class="row"><b>Name:</b> ${data.name}</div>
+      <div class="row"><b>Email:</b> <a href="mailto:${data.email}">${data.email}</a></div>
+      ${data.phone ? `<div class="row"><b>Phone:</b> ${data.phone}</div>` : ""}
+      <div class="row"><b>Subject:</b> ${data.subject}</div>
+    </div>
+    <p class="text" style="white-space: pre-wrap; background:#f8fafc; border-radius:10px; padding:14px 16px; border:1px solid #f1f5f9;">${data.message}</p>
+    <p class="text">Reply directly to this email to respond to ${data.name.split(" ")[0]}.</p>
+  `);
+
+  if (!emailConfigured) {
+    console.log("\n=======================================================");
+    console.log(`[DEV EMAIL SIMULATOR] To: ${to}`);
+    console.log(`[DEV EMAIL SIMULATOR] Subject: New contact form message — ${data.subject}`);
+    console.log(`[DEV EMAIL SIMULATOR] From: ${data.name} <${data.email}>`);
+    console.log(`[DEV EMAIL SIMULATOR] Message: ${data.message}`);
+    console.log("=======================================================\n");
+    return true;
+  }
+
+  try {
+    await getTransporter().sendMail({
+      from: EMAIL_FROM,
+      to,
+      replyTo: data.email,
+      subject: `New contact form message: ${data.subject}`,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to send contact notification email:", error);
+    return false;
+  }
+}

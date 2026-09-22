@@ -131,7 +131,7 @@ export default function Hero() {
             <Link
               key={b.title}
               href={b.href || "/shop"}
-              className={`group relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br ${b.gradient} ${b.text} shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[150px]`}
+              className={`group relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br ${b.gradient} ${b.text} shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col justify-between ${b.image ? "min-h-[176px] sm:min-h-[190px]" : "min-h-[150px]"}`}
             >
               {/* Dot texture + hover shine — gives the flat gradient card some depth/"stylish" polish */}
               <div
@@ -140,20 +140,46 @@ export default function Hero() {
               />
               <span className="shine-sweep" />
 
-              {/* Layered floating emoji cluster instead of one flat icon */}
-              <span className="absolute -right-3 -bottom-4 text-8xl opacity-20 select-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
-                {b.emoji}
-              </span>
-              <span
-                className="absolute right-10 top-4 text-2xl opacity-30 select-none animate-float"
-                style={{ animationDuration: "4.5s", animationDelay: `${i * 0.3}s` }}
-              >
-                {b.emoji}
-              </span>
+              {b.image ? (
+                <>
+                  {/* Larger round product photo — plain, no color tint. Its own white studio
+                      background is faded out with a radial mask so it doesn't sit as a hard
+                      white circle on the card. */}
+                  <div
+                    className="absolute -right-4 -bottom-6 w-36 h-36 sm:w-44 sm:h-44 rounded-full overflow-hidden shadow-2xl animate-float"
+                    style={{
+                      animationDuration: "5.5s",
+                      WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 88%)",
+                      maskImage: "radial-gradient(circle at 50% 50%, black 58%, transparent 88%)",
+                    }}
+                  >
+                    <Image src={b.image} alt="" fill sizes="176px" className="object-cover object-center" />
+                  </div>
+                  <span
+                    className="absolute right-24 sm:right-28 top-4 text-2xl opacity-90 select-none animate-float drop-shadow-lg"
+                    style={{ animationDuration: "4.5s", animationDelay: `${i * 0.3}s` }}
+                  >
+                    {b.emoji}
+                  </span>
+                </>
+              ) : (
+                <>
+                  {/* Layered floating emoji cluster when there's no photo for this card */}
+                  <span className="absolute -right-3 -bottom-4 text-8xl opacity-20 select-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                    {b.emoji}
+                  </span>
+                  <span
+                    className="absolute right-10 top-4 text-2xl opacity-30 select-none animate-float"
+                    style={{ animationDuration: "4.5s", animationDelay: `${i * 0.3}s` }}
+                  >
+                    {b.emoji}
+                  </span>
+                </>
+              )}
 
               <div className="relative">
                 <h3 className="text-xl font-black leading-tight">{b.title}</h3>
-                <p className="text-sm mt-1 opacity-85 max-w-[200px]">{b.body}</p>
+                <p className={`text-sm mt-1 opacity-85 ${b.image ? "max-w-[120px] sm:max-w-[135px]" : "max-w-[200px]"}`}>{b.body}</p>
               </div>
               <span className="relative inline-flex items-center gap-1.5 text-sm font-bold mt-3 transition-transform duration-300 group-hover:translate-x-1">
                 Learn more <ArrowRight className="w-4 h-4" />

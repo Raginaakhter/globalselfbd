@@ -19,14 +19,13 @@ export const defaultCategories = [
 ];
 
 export const defaultContent: Record<string, unknown> = {
-  // phone / whatsapp / socials are intentionally empty: the UI hides them until real values are set.
   settings: {
     siteName: "Global Shelf BD",
     tagline: "Bringing authentic global health, beauty and everyday products to Bangladesh at honest prices.",
     email: "info@globalshelfbd.com",
-    phone: "",
-    whatsapp: "",
-    address: "Dhaka, Bangladesh",
+    phone: "01552405670",
+    whatsapp: "8801552405670",
+    address: "Holding # 67/A, Rabindra Sarani, Sector # 7 (near Azampur), Uttara, Dhaka, Bangladesh, 1230",
     socials: [],
     topBarText: "সারা বাংলাদেশে ডেলিভারি",
     complaintTitle: "আপনার অভিযোগ জানান",
@@ -78,6 +77,7 @@ export const defaultContent: Record<string, unknown> = {
       href: "/shop?category=baby",
       gradient: "from-sky-500 via-brand-600 to-navy-700",
       emojis: ["🍼","🧸","👶"],
+      productImage: "/products/sr7995428438266.png",
     },
   ],
   sideBanners: [
@@ -88,14 +88,16 @@ export const defaultContent: Record<string, unknown> = {
       gradient: "from-sun-400 to-sun-500",
       text: "text-navy-800",
       href: "/shop?sort=discount",
+      image: "/products/sr7882661101818.png",
     },
     {
-      title: "Free Delivery ৳2,500+",
+      title: "Free Delivery ৳10,000+",
       body: "Across Dhaka, Chattogram & beyond.",
       emoji: "🚚",
       gradient: "from-navy-600 to-navy-800",
       text: "text-white",
       href: "/shop?sort=discount",
+      image: "/products/sr7460113744122.png",
     },
   ],
   trustBadges: [
@@ -110,8 +112,8 @@ export const defaultContent: Record<string, unknown> = {
     { label: "Best Sellers", href: "/shop?sort=popular" },
     { label: "Brands", href: "/#brands" },
     { label: "Clearance", href: "/shop?sort=discount" },
-    { label: "Help & Contact", href: "/#contact" },
-    { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "About Us", href: "/about" },
+    { label: "Help & Contact", href: "/contact" },
   ],
   // Only links to pages that exist. Add more here as pages are built.
   footerColumns: [
@@ -131,6 +133,17 @@ export const defaultContent: Record<string, unknown> = {
         { label: "All Products", href: "/shop" },
         { label: "My Cart", href: "/cart" },
         { label: "My Account", href: "/profile" },
+        { label: "Track Order", href: "/track-order" },
+        { label: "Contact Us", href: "/contact" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About Us", href: "/about" },
+        { label: "Terms of Service", href: "/terms" },
+        { label: "Refund / Return Policy", href: "/refund-policy" },
+        { label: "Shipping & Delivery Policy", href: "/shipping-policy" },
         { label: "Privacy Policy", href: "/privacy-policy" },
       ],
     },

@@ -46,6 +46,7 @@ export type SideBanner = {
   gradient: string;
   text: string;
   href?: string;
+  image?: string; // small round product photo shown on the card
 };
 
 export type TrustBadge = { title: string; body: string; emoji: string };
