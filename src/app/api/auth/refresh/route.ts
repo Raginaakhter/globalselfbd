@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
       email: user.email,
       avatar: user.avatar,
       provider: user.provider,
+      role: user.role,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
     };

@@ -2,6 +2,7 @@
 // Run with: npx prisma db seed
 
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { seedSiteContent } from "./seed-site";
 
 const prisma = new PrismaClient();
@@ -218,6 +219,41 @@ async function main() {
   console.log("🌱 Seeding site content...");
   await seedSiteContent(prisma);
   console.log("✅ Seeded categories and site content");
+
+  console.log("🌱 Ensuring an admin account exists...");
+  await seedAdminUser();
+}
+
+// Idempotent — safe to run on every deploy. Creates (or promotes) a single admin account so
+// there's always a way into /admin without hand-editing the database. Override the defaults via
+// ADMIN_EMAIL / ADMIN_PASSWORD in .env for anything beyond local development.
+async function seedAdminUser() {
+  const email = (process.env.ADMIN_EMAIL || "admin@globalshelfbd.com").toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "Admin@12345";
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    if (existing.role !== "admin") {
+      await prisma.user.update({ where: { email }, data: { role: "admin" } });
+      console.log(`✅ Promoted existing user ${email} to admin`);
+    } else {
+      console.log(`✅ Admin account ${email} already exists`);
+    }
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await prisma.user.create({
+    data: {
+      name: "Global Shelf BD Admin",
+      email,
+      passwordHash,
+      provider: "local",
+      role: "admin",
+      emailVerified: true,
+    },
+  });
+  console.log(`✅ Created admin account ${email} (password: ${password}) — sign in, then change the password via the API`);
 }
 
 main()

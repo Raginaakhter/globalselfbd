@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   email: string;
   avatar: string | null;
   provider: string;
+  role: string;
   emailVerified: boolean;
   createdAt: Date;
 }
@@ -62,6 +63,7 @@ export async function authenticateRequest(req: NextRequest): Promise<{
       email: true,
       avatar: true,
       provider: true,
+      role: true,
       emailVerified: true,
       createdAt: true,
     },
@@ -80,5 +82,30 @@ export async function authenticateRequest(req: NextRequest): Promise<{
     };
   }
 
+  return { user };
+}
+
+/**
+ * Authenticate the request and additionally require the user to have the "admin" role.
+ * Returns a 403 (rather than 401) when the user is authenticated but not an admin, since the
+ * credentials themselves were valid — they just don't grant access to this resource.
+ */
+export async function requireAdmin(req: NextRequest): Promise<{
+  user: AuthenticatedUser | null;
+  errorResponse?: NextResponse;
+}> {
+  const { user, errorResponse } = await authenticateRequest(req);
+  if (errorResponse || !user) {
+    return { user: null, errorResponse };
+  }
+  if (user.role !== "admin") {
+    return {
+      user: null,
+      errorResponse: NextResponse.json(
+        { success: false, message: "Forbidden: Admin access required" },
+        { status: 403 }
+      ),
+    };
+  }
   return { user };
 }

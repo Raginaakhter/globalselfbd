@@ -1,20 +1,19 @@
 // POST /api/orders — place a new order
 // Re-validates all prices server-side. Stores order + line items in DB.
+// GET  /api/orders — "My Orders": list of the authenticated user's own orders.
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSiteSettings } from "@/lib/site";
+import { newOrderId, serializeOrder, serializeOrderSummary } from "@/lib/orders";
+import { sendOrderConfirmationEmail } from "@/lib/email";
+import { authenticateRequest } from "@/lib/auth-middleware";
+import { checkRateLimit } from "@/lib/rate-limiter";
 
 const MAX_QTY = 10;
 
 const BD_PHONE = /^(?:\+?88)?01[3-9]\d{8}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function newOrderId() {
-  const stamp = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `GS-${stamp}${rand}`;
-}
 
 type OrderInput = {
   items: { id: string; qty: number }[];
@@ -33,8 +32,26 @@ type OrderInput = {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rateCheck = checkRateLimit(`place-order:${ip}`, 20, 15 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, message: `Too many orders placed. Please try again in ${rateCheck.resetInSeconds} seconds.` },
+        { status: 429 }
+      );
+    }
+
     const body = (await req.json()) as OrderInput;
-    const { items, customer, userId } = body;
+    const { items, customer } = body;
+
+    // -------- Only trust a userId that comes from a verified access token --------
+    // (a client-supplied `userId` in the body is never trusted for who the order belongs to)
+    let verifiedUserId: string | null = null;
+    const authHeader = req.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const { user } = await authenticateRequest(req);
+      if (user) verifiedUserId = user.id;
+    }
 
     // -------- Validate customer fields --------
     const errors: Record<string, string> = {};
@@ -44,8 +61,8 @@ export async function POST(req: NextRequest) {
     if (!customer?.phone || !BD_PHONE.test(customer.phone.replace(/[\s-]/g, ""))) {
       errors.phone = "Enter a valid Bangladeshi mobile number.";
     }
-    if (customer?.email && !EMAIL_RE.test(customer.email)) {
-      errors.email = "Enter a valid email address.";
+    if (!customer?.email || !EMAIL_RE.test(customer.email)) {
+      errors.email = "Enter a valid email address — it's used for your order confirmation and order tracking.";
     }
     if (!customer?.address || customer.address.trim().length < 8) {
       errors.address = "Please enter your full delivery address.";
@@ -144,7 +161,7 @@ export async function POST(req: NextRequest) {
         : SHIPPING_OUTSIDE_DHAKA;
     const total = subtotal + shipping;
 
-    // -------- Create order + items in a transaction --------
+    // -------- Create order + items + initial status history in a transaction --------
     const orderId = newOrderId();
 
     const order = await prisma.$transaction(async (tx) => {
@@ -160,10 +177,10 @@ export async function POST(req: NextRequest) {
       return tx.order.create({
         data: {
           id: orderId,
-          userId: userId || null,
+          userId: verifiedUserId,
           customerName: customer.name.trim(),
           customerPhone: customer.phone.replace(/[\s-]/g, ""),
-          customerEmail: customer.email || "",
+          customerEmail: customer.email?.trim().toLowerCase() || "",
           address: customer.address.trim(),
           area: customer.area.trim(),
           zone: customer.zone,
@@ -175,23 +192,27 @@ export async function POST(req: NextRequest) {
           items: {
             create: orderItems,
           },
+          statusHistory: {
+            create: { status: "pending", note: "Order placed", changedBy: "system" },
+          },
         },
-        include: { items: true },
+        include: { items: true, statusHistory: true },
       });
     });
+
+    const serialized = serializeOrder(order);
+
+    // Best-effort order confirmation email — never fails the order if SMTP is unavailable.
+    if (serialized.customerEmail) {
+      sendOrderConfirmationEmail(serialized).catch((err) =>
+        console.error("Order confirmation email failed:", err)
+      );
+    }
 
     return NextResponse.json({
       success: true,
       message: "Order placed successfully!",
-      data: {
-        id: order.id,
-        status: order.status,
-        subtotal: order.subtotal,
-        shipping: order.shipping,
-        total: order.total,
-        createdAt: order.createdAt.toISOString(),
-        items: order.items,
-      },
+      data: serialized,
     });
   } catch (error) {
     console.error("POST /api/orders error:", error);
@@ -200,4 +221,23 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// GET /api/orders — "My Orders": every order that belongs to the signed-in user, newest first.
+export async function GET(req: NextRequest) {
+  const { user, errorResponse } = await authenticateRequest(req);
+  if (errorResponse || !user) {
+    return errorResponse || NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+
+  const orders = await prisma.order.findMany({
+    where: { userId: user.id },
+    include: { items: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json({
+    success: true,
+    data: { orders: orders.map(serializeOrderSummary) },
+  });
 }

@@ -2,8 +2,11 @@
 
 import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, MapPin, Package, Phone, ShoppingBag, Wallet } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CalendarClock, Home, MapPin, Package, Phone, ShoppingBag, Wallet, PackageSearch } from "lucide-react";
 import { formatPrice } from "@/lib/shop";
+import { useAuth } from "@/context/AuthContext";
+import { StatusBadge } from "@/components/orders/StatusTimeline";
 
 const CONFETTI = ["#22c55e", "#16a34a", "#fbbf24", "#1e3a6e", "#f43f5e", "#34d399", "#f59e0b"];
 
@@ -71,14 +74,32 @@ function SuccessCheck() {
 
 export default function OrderSuccessPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isAuthenticated, authenticatedFetch } = useAuth();
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Fetch order from the API
+  // Load the order: first from the sessionStorage snapshot written by checkout (instant, works
+  // even for guests who gave no email), then fall back to the API — authenticated for logged-in
+  // users, or with the ?email= we carried over in the URL for guests reloading this page.
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/orders/${id}`);
+        const cached = sessionStorage.getItem(`gs-order-${id}`);
+        if (cached) {
+          setOrder(JSON.parse(cached));
+          setLoaded(true);
+          return;
+        }
+      } catch {
+        // sessionStorage unavailable — fall through to the API
+      }
+
+      try {
+        const email = searchParams.get("email");
+        const query = email ? `?email=${encodeURIComponent(email)}` : "";
+        const res = await (isAuthenticated ? authenticatedFetch(`/api/orders/${id}`) : fetch(`/api/orders/${id}${query}`));
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
@@ -91,7 +112,16 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ id: str
         setLoaded(true);
       }
     })();
-  }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isAuthenticated]);
+
+  const trackOrder = () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=${encodeURIComponent(`/profile/orders/${id}`)}`);
+      return;
+    }
+    router.push(`/profile/orders/${id}`);
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
@@ -108,6 +138,11 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ id: str
         <p className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 border border-brand-200 text-sm font-bold text-brand-800 fade-up" style={{ animationDelay: "1.1s" }}>
           <Package className="w-4 h-4" /> Order ID: <span className="font-black tracking-wider">{id}</span>
         </p>
+        {loaded && order && (
+          <p className="mt-2 fade-up" style={{ animationDelay: "1.15s" }}>
+            <StatusBadge status={order.status} />
+          </p>
+        )}
       </div>
 
       {loaded && order && (
@@ -163,11 +198,20 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ id: str
       )}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3 fade-up" style={{ animationDelay: "1.4s" }}>
-        <Link href="/shop" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-white btn-primary-gradient">
-          <ShoppingBag className="w-4 h-4" /> Continue Shopping
+        <button
+          type="button"
+          onClick={trackOrder}
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-white btn-primary-gradient cursor-pointer"
+        >
+          <PackageSearch className="w-4 h-4" /> Track Order
+        </button>
+        <Link href="/" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-navy-700 border-2 border-navy-700 hover:bg-navy-50 transition-colors">
+          <Home className="w-4 h-4" /> Go to Home
         </Link>
-        <Link href="/" className="px-7 py-3.5 rounded-full text-sm font-bold text-navy-700 border-2 border-navy-700 hover:bg-navy-50 transition-colors">
-          Back to Home
+      </div>
+      <div className="mt-4 text-center fade-up" style={{ animationDelay: "1.45s" }}>
+        <Link href="/shop" className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand-800">
+          <ShoppingBag className="w-4 h-4" /> Continue Shopping
         </Link>
       </div>
     </div>

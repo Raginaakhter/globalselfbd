@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { Search, ShoppingCart, User as UserIcon, Menu, X, LayoutGrid, LogIn, Heart } from "lucide-react";
+import { Search, ShoppingCart, User as UserIcon, Menu, X, LayoutGrid, Package } from "lucide-react";
 import Logo from "./Logo";
 import { useSite } from "@/context/SiteContext";
 
@@ -26,25 +26,27 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm text-slate-800">
       {/* Main row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-[72px] flex items-center gap-3 lg:gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-18 lg:h-20 xl:h-22 flex items-center gap-2 sm:gap-3 lg:gap-6">
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="Toggle menu"
-          className="lg:hidden p-2 -ml-2 rounded-lg text-navy-700 hover:bg-slate-100 cursor-pointer"
+          className="lg:hidden p-2 -ml-1 rounded-lg text-slate-700 hover:bg-slate-100 cursor-pointer shrink-0"
         >
           {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
 
-        <Logo />
+        <div className="shrink-0">
+          <Logo compact />
+        </div>
 
         {/* Search */}
         <form
           role="search"
           onSubmit={submitSearch}
-          className="hidden md:flex flex-1 max-w-2xl mx-auto items-center rounded-full border-2 border-brand-500/70 focus-within:border-brand-600 focus-within:ring-4 focus-within:ring-brand-500/15 bg-white overflow-hidden transition-all"
+          className="hidden md:flex flex-1 min-w-0 max-w-md lg:max-w-lg xl:max-w-2xl mx-auto items-center rounded-full border-2 border-blue-900 bg-blue-900 overflow-hidden transition-all focus-within:ring-4 focus-within:ring-blue-900/15"
         >
           <input
             type="search"
@@ -52,53 +54,62 @@ export default function Header() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search vitamins, skin care, baby, grocery…"
             aria-label="Search products"
-            className="flex-1 px-5 py-2.5 text-sm outline-none bg-transparent placeholder:text-slate-400"
+            className="flex-1 px-5 py-2 text-sm outline-none bg-transparent placeholder:text-blue-100 text-white"
           />
           <button
             type="submit"
             aria-label="Search"
-            className="m-1 px-5 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="m-1 px-4 py-1.5 rounded-full bg-white text-blue-900 hover:bg-blue-50 text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Search className="w-4 h-4" />
             <span className="hidden xl:inline">Search</span>
           </button>
         </form>
 
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
-          <button type="button" aria-label="Wishlist" className="hidden sm:flex p-2.5 rounded-full text-navy-700 hover:bg-brand-50 hover:text-brand-700 transition-colors cursor-pointer">
-            <Heart className="w-5 h-5" />
-          </button>
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
+          <Link
+            href="/track-order"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 transition-colors shadow-sm"
+          >
+            <Package className="w-4 h-4" />
+            <span className="hidden sm:inline">Track Order</span>
+          </Link>
 
           {isAuthenticated ? (
-            <Link
-              href="/profile"
-              className="flex items-center gap-2 pl-2 pr-3.5 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-sm font-bold hover:bg-brand-100 transition-colors"
-            >
-              <span className="w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs">
-                {(user?.name?.[0] || "U").toUpperCase()}
-              </span>
-              <span className="hidden sm:inline">{user?.name?.split(" ")[0] || "Account"}</span>
-            </Link>
-          ) : (
             <>
-              <Link href="/login" className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold text-navy-700 hover:bg-slate-100 transition-colors">
-                <LogIn className="w-4 h-4 text-brand-600" /> Sign In
-              </Link>
-              <Link href="/register" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold text-white btn-primary-gradient">
-                <UserIcon className="w-4 h-4" />
-                <span>Register</span>
+              {user?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                >
+                  Admin
+                </Link>
+              )}
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 pl-2 pr-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-sm font-bold hover:bg-slate-200 transition-colors"
+              >
+                <span className="w-7 h-7 rounded-full bg-blue-900 text-white flex items-center justify-center text-xs">
+                  {(user?.name?.[0] || "U").toUpperCase()}
+                </span>
+                <span className="hidden sm:inline">{user?.name?.split(" ")[0] || "Account"}</span>
               </Link>
             </>
+          ) : (
+            <Link href="/register" className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 transition-colors">
+              <UserIcon className="w-4 h-4" />
+              <span>Register</span>
+            </Link>
           )}
 
           <button
             type="button"
             aria-label={`Open cart, ${count} items`}
             onClick={openDrawer}
-            className="relative p-2.5 rounded-full bg-navy-700 text-white hover:bg-navy-600 transition-colors cursor-pointer"
+            className="relative p-2.5 rounded-full bg-blue-900 text-white hover:bg-blue-800 transition-colors cursor-pointer shadow-sm"
           >
             <ShoppingCart className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-sun-400 text-navy-800 text-[11px] font-black flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-emerald-400 text-blue-950 text-[11px] font-black flex items-center justify-center">
               {count > 99 ? "99+" : count}
             </span>
           </button>
@@ -106,12 +117,12 @@ export default function Header() {
       </div>
 
       {/* Mobile search */}
-      <form onSubmit={submitSearch} role="search" className="md:hidden px-4 pb-3">
-        <div className="flex items-center rounded-full border-2 border-brand-500/70 bg-white overflow-hidden">
-          <Search className="w-4 h-4 ml-4 text-slate-400" />
+      <form onSubmit={submitSearch} role="search" className="md:hidden px-3 pb-3">
+        <div className="flex items-center rounded-full border-2 border-blue-900 bg-blue-900 overflow-hidden">
+          <Search className="w-4 h-4 ml-4 text-blue-100 shrink-0" />
           <input type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)} placeholder="Search products…" aria-label="Search products" className="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent" />
+            onChange={(e) => setQuery(e.target.value)} placeholder="Search products…" aria-label="Search products" className="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent text-white placeholder:text-blue-100" />
         </div>
       </form>
 
@@ -123,16 +134,16 @@ export default function Header() {
               type="button"
               aria-expanded={catOpen}
               onClick={() => setCatOpen((v) => !v)}
-              className="flex items-center gap-2 h-11 px-4 bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition-colors cursor-pointer"
+              className="flex items-center gap-2 h-11 px-4 bg-blue-900 text-white text-sm font-bold hover:bg-blue-800 transition-colors cursor-pointer"
             >
               <LayoutGrid className="w-4 h-4" /> Shop By Category
             </button>
             {catOpen && (
-              <div className="absolute left-0 top-full w-[560px] bg-white rounded-b-2xl border border-slate-200 shadow-2xl p-3 grid grid-cols-2 gap-1">
+              <div className="absolute left-0 top-full w-140 bg-white rounded-b-2xl border border-slate-200 shadow-2xl p-3 grid grid-cols-2 gap-1">
                 {categories.map((c) => (
-                  <Link key={c.slug} href={`/shop?category=${c.slug}`} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-brand-50 transition-colors">
+                  <Link key={c.slug} href={`/shop?category=${c.slug}`} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-blue-50 transition-colors">
                     <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg ${c.tint}`}>{c.emoji}</span>
-                    <span className="text-sm font-semibold text-navy-700">{c.name}</span>
+                    <span className="text-sm font-semibold text-blue-950">{c.name}</span>
                   </Link>
                 ))}
               </div>
@@ -143,7 +154,7 @@ export default function Header() {
               key={l.label}
               href={l.href}
               className={`px-4 h-11 flex items-center text-sm font-semibold transition-colors ${
-                l.hot ? "text-coral-500 hover:text-rose-600" : "text-navy-700 hover:text-brand-600"
+                l.hot ? "text-rose-500 hover:text-rose-600" : "text-slate-700 hover:text-blue-900"
               }`}
             >
               {l.hot && <span className="mr-1.5">🔥</span>}
@@ -170,11 +181,6 @@ export default function Header() {
                 {l.label}
               </Link>
             ))}
-            {!isAuthenticated && (
-              <Link href="/login" className="py-2.5 text-sm font-semibold text-brand-700 border-t border-slate-100">
-                Sign In
-              </Link>
-            )}
           </div>
         </div>
       )}

@@ -22,7 +22,8 @@ function validate(f: Form): Errors {
   const e: Errors = {};
   if (f.name.trim().length < 2) e.name = "Please enter your full name.";
   if (!BD_PHONE.test(f.phone.replace(/[\s-]/g, ""))) e.phone = "Enter a valid Bangladeshi mobile number (e.g. 01712345678).";
-  if (f.email && !EMAIL.test(f.email)) e.email = "Enter a valid email address.";
+  if (!f.email.trim()) e.email = "Please enter your email address — we'll send your order confirmation and use it for order tracking.";
+  else if (!EMAIL.test(f.email)) e.email = "Enter a valid email address.";
   if (f.address.trim().length < 8) e.address = "Please enter your full delivery address.";
   if (f.area.trim().length < 2) e.area = "Please enter your area / district.";
   return e;
@@ -48,7 +49,7 @@ function Field({ label, error, children, optional }: { label: string; error?: st
 function CheckoutContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const { user } = useAuth();
+  const { user, authenticatedFetch } = useAuth();
   const cart = useCart();
   const { settings } = useSite();
 
@@ -128,7 +129,11 @@ function CheckoutContent() {
 
     setPlacing(true);
     try {
-      const res = await fetch("/api/orders", {
+      // Logged-in users place the order through authenticatedFetch so the backend can verify who
+      // they are from the access token and correctly attach the order to their account — a plain
+      // fetch (and any client-supplied userId) is never trusted for that.
+      const doFetch = user ? authenticatedFetch : fetch;
+      const res = await doFetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,7 +148,6 @@ function CheckoutContent() {
             note: form.note,
           },
           payment: "cod",
-          userId: user?.id,
         }),
       });
       const data = await res.json();
@@ -151,7 +155,15 @@ function CheckoutContent() {
       if (res.ok && data.success) {
         if (!isBuyNow) cart.clear();
         toast.success("Order placed successfully!");
-        router.replace(`/order-success/${data.data.id}`);
+        // Stash the freshly-placed order so the success page can render it instantly and, for
+        // guest checkouts, re-fetch it later without needing to re-enter anything.
+        try {
+          sessionStorage.setItem(`gs-order-${data.data.id}`, JSON.stringify(data.data));
+        } catch {
+          // sessionStorage unavailable (private mode) — the success page will fall back to the API
+        }
+        const emailQuery = !user && form.email ? `?email=${encodeURIComponent(form.email.trim().toLowerCase())}` : "";
+        router.replace(`/order-success/${data.data.id}${emailQuery}`);
       } else {
         toast.error(data.message || "Failed to place order. Please try again.");
         setPlacing(false);
@@ -202,9 +214,10 @@ function CheckoutContent() {
                 <input value={form.phone} onChange={(e) => set("phone", e.target.value)} inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX" className={inputCls(errors.phone)} />
               </Field>
               <div className="sm:col-span-2">
-                <Field label="Email" optional error={errors.email}>
+                <Field label="Email" error={errors.email}>
                   <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" placeholder="name@example.com" className={inputCls(errors.email)} />
                 </Field>
+                <p className="text-[11px] text-slate-400 mt-1.5">We&apos;ll send your order confirmation here — you&apos;ll also use it to track your order.</p>
               </div>
             </div>
           </section>

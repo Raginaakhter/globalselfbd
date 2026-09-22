@@ -1,20 +1,42 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Globe } from "lucide-react";
 
-export default function Logo({ light = false }: { light?: boolean }) {
+// Intrinsic aspect ratios of the source PNGs (kept in sync with public/logo-*.png)
+// so Next/Image can reserve the right space and avoid layout shift on every device.
+const COMPACT_RATIO = 786 / 662; // icon + wordmark
+const FULL_RATIO = 788 / 742; // icon + wordmark + tagline
+
+export default function Logo({ light = false, compact = false }: { light?: boolean; compact?: boolean }) {
+  const image = compact ? (
+    <Image
+      src="/logo-compact.png"
+      alt="Global Shelf BD"
+      width={786}
+      height={662}
+      priority
+      className="h-13 w-auto sm:h-15 md:h-16 lg:h-18 xl:h-20 object-contain"
+      style={{ aspectRatio: COMPACT_RATIO }}
+    />
+  ) : (
+    <Image
+      src="/logo-full.png"
+      alt="Global Shelf BD — Global Products, Authentic Choice"
+      width={788}
+      height={742}
+      className="h-24 w-auto sm:h-28 md:h-32 object-contain"
+      style={{ aspectRatio: FULL_RATIO }}
+    />
+  );
+
   return (
-    <Link href="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Global Shelf BD home">
-      <span className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 via-brand-600 to-navy-600 shadow-lg shadow-brand-500/30 group-hover:rotate-6 transition-transform duration-300">
-        <Globe className="w-5 h-5 text-white" />
-      </span>
-      <span className="leading-tight">
-        <span className={`block text-lg font-black tracking-tight ${light ? "text-white" : "text-navy-700"}`}>
-          Global Shelf <span className="text-brand-500">BD</span>
-        </span>
-        <span className={`block text-[10px] font-semibold uppercase tracking-[0.16em] ${light ? "text-white/60" : "text-slate-500"}`}>
-          Authentic • Global • Local
-        </span>
-      </span>
+    <Link href="/" className="group shrink-0 inline-flex" aria-label="Global Shelf BD home">
+      {light ? (
+        // The artwork itself is drawn in navy/blue, so on a dark background (e.g. the
+        // footer) it needs a light card behind it to stay visible and "pop" correctly.
+        <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">{image}</div>
+      ) : (
+        image
+      )}
     </Link>
   );
 }

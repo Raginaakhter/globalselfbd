@@ -59,6 +59,18 @@ export const googleAuthSchema = z.object({
   idToken: z.string().min(1, "Google ID Token is required"),
 });
 
+export const trackOrderSchema = z.object({
+  orderId: z.string().trim().min(1, "Please enter your Order ID"),
+  email: z.string().trim().min(1, "Please enter the email used for the order").email("Enter a valid email address").toLowerCase(),
+});
+
+export const updateOrderStatusSchema = z.object({
+  status: z.enum(["pending", "confirmed", "processing", "out_for_delivery", "delivered", "cancelled"], {
+    message: "Invalid order status",
+  }),
+  note: z.string().trim().max(500).optional(),
+});
+
 export const updateProfileSchema = z.object({
   name: z.string().trim().min(2, "Full Name must be at least 2 characters long").max(100),
   avatar: z

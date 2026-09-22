@@ -5,6 +5,7 @@ import { comparePassword, hashToken } from "@/lib/security";
 import { signAccessToken, signRefreshToken } from "@/lib/jwt";
 import { setRefreshTokenCookie } from "@/lib/cookies";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { linkGuestOrdersToUser } from "@/lib/orders";
 
 export async function POST(req: NextRequest) {
   try {
@@ -82,12 +83,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Link any guest orders placed with this email to the account being logged into.
+    await linkGuestOrdersToUser(user.id, user.email);
+
     const safeUser = {
       id: user.id,
       name: user.name,
       email: user.email,
       avatar: user.avatar,
       provider: user.provider,
+      role: user.role,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
     };

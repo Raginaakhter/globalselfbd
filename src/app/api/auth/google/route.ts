@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { signAccessToken, signRefreshToken } from "@/lib/jwt";
 import { setRefreshTokenCookie } from "@/lib/cookies";
 import { hashToken } from "@/lib/security";
+import { linkGuestOrdersToUser } from "@/lib/orders";
 
 const googleClientId =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
@@ -150,12 +151,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    await linkGuestOrdersToUser(user.id, user.email);
+
     const safeUser = {
       id: user.id,
       name: user.name,
       email: user.email,
       avatar: user.avatar,
       provider: user.provider,
+      role: user.role,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
     };

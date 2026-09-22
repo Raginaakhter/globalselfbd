@@ -9,6 +9,7 @@ export interface User {
   email: string;
   avatar?: string | null;
   provider: string;
+  role: string;
   emailVerified: boolean;
   createdAt: string;
 }

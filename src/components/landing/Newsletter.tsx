@@ -34,7 +34,7 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+    <section id="get-notified" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 scroll-mt-24">
       <div className="rounded-3xl bg-gradient-to-r from-brand-600 to-brand-800 text-white p-6 sm:p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xl">
         <div>
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Get the best deals first</h2>
